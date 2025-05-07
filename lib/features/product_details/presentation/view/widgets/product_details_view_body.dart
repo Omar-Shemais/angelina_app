@@ -23,6 +23,13 @@ class ProductDetailsViewBody extends StatefulWidget {
 class _ProductDetailsViewBodyState extends State<ProductDetailsViewBody> {
   int quantity = 1;
   String dropdownvalue = '';
+  String calculateDiscount(String regular, String sale) {
+    final double regularPrice = double.tryParse(regular) ?? 0;
+    final double salePrice = double.tryParse(sale) ?? 0;
+    if (regularPrice == 0) return '0';
+    final discount = ((regularPrice - salePrice) / regularPrice) * 100;
+    return discount.toStringAsFixed(0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +92,7 @@ class _ProductDetailsViewBodyState extends State<ProductDetailsViewBody> {
                   ],
                 ),
                 SizedBox(height: 15.h),
-                // Display the description as cleaned text
+
                 AppText(
                   title:
                       widget.product.description.isNotEmpty
@@ -116,12 +123,58 @@ class _ProductDetailsViewBodyState extends State<ProductDetailsViewBody> {
                         );
                       },
                     ),
-                    AppText(
-                      title:
-                          'ر.س${(double.parse(widget.product.price) * quantity).toStringAsFixed(2)} ',
-                      fontSize: 22,
-                      color: AppColors.primaryColor,
-                      fontWeight: FontWeight.w700,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (widget.product.salePrice.isNotEmpty)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              AppText(
+                                title:
+                                    'ر.س${(double.parse(widget.product.salePrice) * quantity).toStringAsFixed(2)}',
+                                fontSize: 22,
+                                color: AppColors.primaryColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                'ر.س${(double.parse(widget.product.regularPrice) * quantity).toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  color: Colors.grey,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w,
+                                  vertical: 4.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.redAccent,
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                child: AppText(
+                                  title:
+                                      '%${calculateDiscount(widget.product.regularPrice, widget.product.salePrice)} خصم',
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          AppText(
+                            title:
+                                'ر.س${(double.parse(widget.product.price) * quantity).toStringAsFixed(2)}',
+                            fontSize: 22,
+                            color: AppColors.primaryColor,
+                            fontWeight: FontWeight.w700,
+                          ),
+                      ],
                     ),
                   ],
                 ),

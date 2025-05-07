@@ -3,6 +3,7 @@ import 'package:angelina_app/core/widgets/app_loading_indicator.dart';
 import 'package:angelina_app/core/widgets/custom_button.dart';
 import 'package:angelina_app/core/widgets/custom_text.dart';
 import 'package:angelina_app/core/widgets/shimmer_grid_loader.dart';
+import 'package:angelina_app/features/Favorite/manger/cubit/favorite_cubit.dart';
 import 'package:angelina_app/features/home/data/repo/product_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,23 +30,23 @@ class ProductCategoryView extends StatelessWidget {
         title: Text(categoryName),
         backgroundColor: AppColors.white,
       ),
-      body: BlocProvider(
-        create:
-            (context) =>
-                ProductCubit(ProductRepository())
-                  ..fetchProductsForCategory(categoryId),
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create:
+                (_) =>
+                    ProductCubit(ProductRepository())
+                      ..fetchProductsForCategory(categoryId),
+          ),
+          BlocProvider(create: (_) => FavoriteCubit()..loadFavorites()),
+        ],
         child: SingleChildScrollView(
           child: BlocBuilder<ProductCubit, ProductState>(
             builder: (context, state) {
               if (state is ProductLoading) {
                 return const Center(child: ShimmerGridLoader());
               } else if (state is ProductSuccess) {
-                final filteredProducts =
-                    state.products
-                        .where(
-                          (product) => product.categoryIds.contains(categoryId),
-                        )
-                        .toList();
+                final filteredProducts = state.products;
 
                 if (filteredProducts.isEmpty) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {});
@@ -108,7 +109,7 @@ class ProductCategoryView extends StatelessWidget {
                                     onTap: () {
                                       context
                                           .read<ProductCubit>()
-                                          .fetchProductsForCategory(categoryId);
+                                          .loadMoreProducts();
                                     },
                                   ),
                         ),
@@ -116,7 +117,7 @@ class ProductCategoryView extends StatelessWidget {
                   ),
                 );
               } else if (state is ProductFailure) {
-                return Center(child: Text('خطأ: ${state.error}'));
+                return Center(child: Text('خطأ: //${state.error}'));
               } else {
                 return const SizedBox.shrink();
               }

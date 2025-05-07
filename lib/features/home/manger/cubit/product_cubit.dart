@@ -12,6 +12,7 @@ class ProductCubit extends Cubit<ProductState> {
   bool _hasMore = true;
   final List<ProductModel> _allProducts = [];
   final bool _isLoaded = false;
+  int? _currentCategoryId;
 
   ProductCubit(this.repository) : super(ProductInitial());
 
@@ -27,19 +28,22 @@ class ProductCubit extends Cubit<ProductState> {
   Future<void> loadMoreProducts() async {
     if (_hasMore && state is ProductSuccess) {
       final currentState = state as ProductSuccess;
-
       emit(currentState.copyWith(isLoadingMore: true));
 
       _page++;
       try {
-        final products = await repository.fetchProducts(
-          page: _page,
-          perPage: _perPage,
-        );
+        final products =
+            _currentCategoryId == null
+                ? await repository.fetchProducts(page: _page, perPage: _perPage)
+                : await repository.fetchProductsByCategory(
+                  categoryId: _currentCategoryId!,
+                  page: _page,
+                  perPage: _perPage,
+                );
+
         if (products.length < _perPage) _hasMore = false;
 
         _allProducts.addAll(products);
-
         emit(
           ProductSuccess(
             List<ProductModel>.from(_allProducts),
@@ -75,15 +79,28 @@ class ProductCubit extends Cubit<ProductState> {
   }
 
   Future<void> fetchProductsForCategory(int categoryId) async {
+    _currentCategoryId = categoryId; // <- Add this line
     emit(ProductLoading());
+    _page = 1;
+    _hasMore = true;
+    _allProducts.clear();
     try {
       final products = await repository.fetchProductsByCategory(
         categoryId: categoryId,
-        page: 1,
+        page: _page,
         perPage: _perPage,
       );
-      final hasMore = products.length == _perPage;
-      emit(ProductSuccess(products, hasMore: hasMore, isLoadingMore: false));
+      if (products.length < _perPage) _hasMore = false;
+
+      _allProducts.addAll(products);
+
+      emit(
+        ProductSuccess(
+          List<ProductModel>.from(_allProducts),
+          hasMore: _hasMore,
+          isLoadingMore: false,
+        ),
+      );
     } catch (e) {
       emit(ProductFailure(e.toString()));
     }

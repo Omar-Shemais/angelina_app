@@ -37,6 +37,8 @@ class _CartItemWidgetState extends State<CartItemWidget> {
       categoryIds: [],
       attributes: [],
       colors: [],
+      regularPrice: '',
+      salePrice: '',
     );
 
     return Padding(

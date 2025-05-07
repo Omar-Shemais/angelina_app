@@ -32,6 +32,21 @@ class ProductContainer extends StatefulWidget {
 class _ProductContainerState extends State<ProductContainer> {
   @override
   Widget build(BuildContext context) {
+    final product = widget.product;
+    final hasDiscount =
+        product.salePrice.isNotEmpty &&
+        product.regularPrice.isNotEmpty &&
+        double.tryParse(product.regularPrice) != null &&
+        double.tryParse(product.salePrice) != null &&
+        double.parse(product.salePrice) < double.parse(product.regularPrice);
+
+    double discountPercent = 0;
+    if (hasDiscount) {
+      final sale = double.parse(product.salePrice);
+      final regular = double.parse(product.regularPrice);
+      discountPercent = (((regular - sale) / regular) * 100).roundToDouble();
+    }
+
     return Container(
       height: 304.h,
       width: 159.w,
@@ -70,11 +85,29 @@ class _ProductContainerState extends State<ProductContainer> {
                   borderRadius: BorderRadius.circular(15),
                 ),
               ),
+              // ⭐ Discount badge
+              if (hasDiscount)
+                Positioned(
+                  top: 5.h,
+                  right: 5.w,
+                  child: CircleAvatar(
+                    backgroundColor: AppColors.primaryColor,
+                    radius: 20.r,
+                    child: AppText(
+                      title: '-${discountPercent.toInt()}%',
+
+                      color: Colors.white,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              // ❤️ Favorite Icon
               Positioned(
                 top: 5.h,
-                right: 5.w,
+                left: 5.w,
                 child: CircleAvatar(
-                  backgroundColor: Colors.white.withOpacity(0.8),
+                  backgroundColor: AppColors.white.withOpacity(0.8),
                   radius: 15.r,
                   child: BlocBuilder<FavoriteCubit, FavoriteState>(
                     builder: (context, state) {
@@ -82,9 +115,7 @@ class _ProductContainerState extends State<ProductContainer> {
                       bool isFav = cubit.isFavorite(widget.product);
                       return GestureDetector(
                         onTap: () {
-                          context.read<FavoriteCubit>().toggleFavorite(
-                            widget.product,
-                          );
+                          cubit.toggleFavorite(widget.product);
                           setState(() {});
                         },
                         child: CircleAvatar(
@@ -122,13 +153,38 @@ class _ProductContainerState extends State<ProductContainer> {
             color: AppColors.lightTextColor,
           ),
           SizedBox(height: 5.h),
-          AppText(
-            title: '${widget.price} ر.س',
-            fontSize: 9.5,
-            textAlign: TextAlign.center,
-            color: AppColors.primaryColor,
-            fontWeight: FontWeight.w700,
-          ),
+          // 💰 Pricing Row
+          if (hasDiscount)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${product.regularPrice} ر.س',
+                  style: TextStyle(
+                    fontSize: 9.sp,
+                    color: Colors.grey,
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+                SizedBox(width: 5.w),
+                Text(
+                  '${product.salePrice} ر.س',
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryColor,
+                  ),
+                ),
+              ],
+            )
+          else
+            AppText(
+              title: '${widget.price} ر.س',
+              fontSize: 10.sp,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryColor,
+              textAlign: TextAlign.center,
+            ),
           SizedBox(height: 5.h),
           AppButton(
             btnText: 'تحديد أحد الخيارات',

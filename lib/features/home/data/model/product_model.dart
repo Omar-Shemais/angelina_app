@@ -3,6 +3,8 @@ class ProductModel {
   final String name;
   final String description;
   final String price;
+  final String regularPrice;
+  final String salePrice;
   final List<String> imageUrls;
   final List<String> categories;
   final List<int> categoryIds;
@@ -14,6 +16,8 @@ class ProductModel {
     required this.name,
     required this.description,
     required this.price,
+    required this.regularPrice,
+    required this.salePrice,
     required this.imageUrls,
     required this.categories,
     required this.categoryIds,
@@ -40,7 +44,6 @@ class ProductModel {
             .toList() ??
         [];
 
-    // Handle null for attributes, default to empty list
     var attributes =
         (json['attributes'] as List?)
             ?.map(
@@ -57,7 +60,6 @@ class ProductModel {
             .toList() ??
         [];
 
-    // Extract color options where the name is "لون"
     List<String> colors = [];
     for (var attr in attributes) {
       if (attr['name'] == 'لون') {
@@ -70,12 +72,14 @@ class ProductModel {
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      price: json['price'] ?? '0',
+      price: json['price']?.toString() ?? '0',
+      regularPrice: json['regular_price']?.toString() ?? '',
+      salePrice: json['sale_price']?.toString() ?? '',
       imageUrls: imageUrls,
       categories: categories,
       categoryIds: categoryIds,
       attributes: attributes,
-      colors: colors, // Assign extracted colors
+      colors: colors,
     );
   }
 
@@ -100,6 +104,8 @@ class ProductModel {
               'visible': attr['visible'],
               'variation': attr['variation'],
               'options': attr['options'],
+              'regular_price': regularPrice,
+              'sale_price': salePrice,
             };
           }).toList(),
       'colors': colors, // Include colors in the JSON output
