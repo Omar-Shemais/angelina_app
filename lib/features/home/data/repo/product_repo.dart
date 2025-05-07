@@ -1,14 +1,9 @@
+import 'package:angelina_app/core/utils/constants/constants.dart';
 import 'package:angelina_app/features/home/data/model/product_model.dart';
 import 'package:dio/dio.dart';
 
 class ProductRepository {
   final Dio _dio = Dio();
-  static const String _baseUrl =
-      'https://angelinashop2025.com/wp-json/wc/v3/products';
-  static const String _consumerKey =
-      'ck_0e46d6f95c508e91ae3d99f64845cc3b6f5eb5e5';
-  static const String _consumerSecret =
-      'cs_ab95108f084683daa92f347a81c6d7a5035435ac';
 
   Future<List<ProductModel>> fetchProducts({
     int page = 1,
@@ -16,10 +11,10 @@ class ProductRepository {
   }) async {
     try {
       final response = await _dio.get(
-        _baseUrl,
+        AppConstants.prouductsBaseUrl,
         queryParameters: {
-          'consumer_key': _consumerKey,
-          'consumer_secret': _consumerSecret,
+          'consumer_key': AppConstants.consumerKey,
+          'consumer_secret': AppConstants.consumerSecret,
           'page': page,
           'per_page': perPage,
         },
@@ -39,10 +34,10 @@ class ProductRepository {
   }) async {
     try {
       final response = await _dio.get(
-        _baseUrl,
+        AppConstants.prouductsBaseUrl,
         queryParameters: {
-          'consumer_key': _consumerKey,
-          'consumer_secret': _consumerSecret,
+          'consumer_key': AppConstants.consumerKey,
+          'consumer_secret': AppConstants.consumerSecret,
           'page': page,
           'per_page': perPage,
           'category': categoryId, // <-- THIS filters by category

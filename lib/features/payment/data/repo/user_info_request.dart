@@ -40,7 +40,7 @@ class OrderRepo {
 
     try {
       final response = await dio.post(
-        'https://angelinashop2025.com/wp-json/wc/v3/orders',
+        AppConstants.postBaseUrl,
         data: orderData,
         options: Options(
           headers: {
